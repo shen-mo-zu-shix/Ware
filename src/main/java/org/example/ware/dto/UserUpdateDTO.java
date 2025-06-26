@@ -8,4 +8,5 @@ public class UserUpdateDTO {
     private String email;       // 邮箱
     private String avatar;      // 头像URL
     private String introduction;// 个人简介
+
 }

@@ -28,10 +28,14 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+
     @Column(name = "email_verified", columnDefinition = "TINYINT(1) DEFAULT 0")
     private Boolean emailVerified;
 
     private String avatar;
+
+    @Column(nullable = false)
+    private String introduction;
 
     @Column(nullable = false)
     private LocalDateTime createTime;
@@ -39,8 +43,11 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updateTime;
 
+    @Column(nullable = false)
+    private Integer role;  // 0-普通用户，1-歌手
 
-    public void setIntroduction(String introduction) {
-        
+
+    public User(Long userId) {
+        this.userId = userId;
     }
 }

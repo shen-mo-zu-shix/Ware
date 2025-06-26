@@ -27,7 +27,7 @@ public class UserController {
     private final IUserService IuserService;
     private final PasswordEncoder passwordEncoder;
     private final JWTComponent jWTComponent;
-    //普通用户注册
+    //用户分角色注册
     @PostMapping("/register")
     public ResultVO register(@RequestBody UserRegisterDTO registerDTO) {
         // 1. 参数校验
@@ -48,6 +48,10 @@ public class UserController {
         }
         // 4. 密码加密
         String encodedPassword = passwordEncoder.encode(registerDTO.getPassword());
+        // 新增角色校验（前端必须传）
+        if (registerDTO.getRole() == null || (registerDTO.getRole() != 0 && registerDTO.getRole() != 1)) {
+            return ResultVO.error(Code.valueOf("请选择角色"));
+        }
         // 5. 构建用户对象
         User newUser = User.builder()
                 .username(registerDTO.getUsername())
@@ -56,6 +60,7 @@ public class UserController {
                 .emailVerified(false) // 默认邮箱未验证
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
+                .role(registerDTO.getRole())  // 设置角色
                 .build();
         // 6. 保存用户
         IuserService.saveUser(newUser);
@@ -63,6 +68,7 @@ public class UserController {
         Map<String, Object> payload = new HashMap<>();
         payload.put("userId", newUser.getUserId());
         payload.put("username", newUser.getUsername());
+        payload.put("role", newUser.getRole()); // 新增角色信息
         String token = jWTComponent.encode(payload);
 
         // 7. 返回成功信息
@@ -73,7 +79,7 @@ public class UserController {
         result.put("message", "注册成功");
         return ResultVO.success(result);
     }
-    //普通用户登录
+    //用户分角色登录
     @PostMapping("login")
     public ResultVO login(@RequestBody UserLoginDTO loginDTO) {
         // 1. 参数校验
@@ -97,6 +103,7 @@ public class UserController {
         Map<String, Object> payload = new HashMap<>();
         payload.put("userId", user.getUserId());
         payload.put("username", user.getUsername());
+        payload.put("role", user.getRole()); // 关键：加入角色信息
         String token = jWTComponent.encode(payload);
 
         // 6. 构建返回数据（脱敏处理，不返回敏感信息）
@@ -105,11 +112,13 @@ public class UserController {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .avatar(user.getAvatar())
+                .role(user.getRole()) // 返回角色给前端
                 .build();
 
         Map<String, Object> result = new HashMap<>();
         result.put("user", userDTO);
         result.put("token", token);
+        result.put("message", "登录成功");
 
         return ResultVO.success(result);
     }
@@ -139,7 +148,7 @@ public class UserController {
             user.setUpdateTime(LocalDateTime.now());
             IuserService.updateById(user);
 
-            return ResultVO.success("密码修改成功，请重新登录");
+            return ResultVO.success("密码修改成功，不用重新登录");
 
         } catch (Exception e) {
             return ResultVO.error(Code.valueOf("登录状态失效，请重新登录"));

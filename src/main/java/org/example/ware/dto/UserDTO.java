@@ -10,5 +10,6 @@ public class UserDTO {
     private String username;
     private String email;
     private String avatar;
+    private Integer  role;
     // 不包含密码等敏感信息
 }

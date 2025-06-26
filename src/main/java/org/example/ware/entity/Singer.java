@@ -31,4 +31,6 @@ public class Singer {
 
     @Column(nullable = false)
     private LocalDateTime createTime;
+
+
 }
